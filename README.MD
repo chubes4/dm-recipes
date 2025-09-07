@@ -88,18 +88,23 @@ composer install
 # Run PHP linting
 composer lint
 
-# Fix coding standards
+# Auto-fix coding standards
 composer lint:fix
+
+# WordPress-specific linting
+composer lint:php
+composer lint:fix:php
 
 # Create production build
 ./build.sh
 ```
 
 ### Build System
-- **Automated ZIP Creation**: Production-ready plugin packages
-- **Dependency Management**: Composer-based PHP dependency handling
-- **Code Quality**: PHP CodeSniffer with WordPress coding standards
-- **File Validation**: Build process validates all required files are present
+- **Automated ZIP Creation**: Production-ready plugin packages via `build.sh`
+- **Dependency Management**: Composer with PSR-4 autoloading and development tools
+- **Code Quality**: PHP CodeSniffer with WordPress coding standards integration
+- **File Validation**: Build process validates all essential plugin files are included
+- **Clean Distribution**: `.buildignore` excludes development files from production builds
 
 ## Architecture
 
@@ -113,18 +118,21 @@ Self-registering via WordPress filters:
 ### File Structure
 ```
 dm-recipes/
-├── dm-recipes.php                       # Main plugin file
-├── build.sh                             # Production build script
-├── composer.json                        # Dependencies and autoloading
+├── dm-recipes.php                       # Main plugin file with autoloader
+├── build.sh                             # Production build script with validation
+├── composer.json                        # Dependencies, autoloading, and linting scripts
+├── .buildignore                         # Development file exclusion patterns
 ├── inc/
-│   ├── handlers/WordPressRecipePublish/ # Data Machine handler
-│   │   ├── WordPressRecipePublish.php   # Main handler implementation
-│   │   ├── WordPressRecipePublishFilters.php  # Filter registration
-│   │   └── WordPressRecipePublishSettings.php # Configuration
-│   └── blocks/recipe-schema/            # Gutenberg block
-│       ├── block.json                   # Schema.org Recipe attributes
-│       ├── recipe-schema.php            # Block registration/rendering
-│       └── index.php                    # Block initialization
+│   ├── handlers/WordPressRecipePublish/ # Data Machine handler implementation
+│   │   ├── WordPressRecipePublish.php   # Main handler with tool call method
+│   │   ├── WordPressRecipePublishFilters.php  # Filter registration system
+│   │   └── WordPressRecipePublishSettings.php # Configuration management
+│   └── blocks/recipe-schema/            # Gutenberg Recipe Schema block
+│       ├── block.json                   # Complete Schema.org Recipe attributes
+│       ├── recipe-schema.php            # Block rendering with microdata/JSON-LD
+│       └── index.php                    # Block registration hooks
+└── .claude/
+    └── recipe-schema.md                 # Schema.org implementation reference
 ```
 
 

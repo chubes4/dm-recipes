@@ -1,62 +1,42 @@
 <?php
-/**
- * WordPress Recipe Publish Handler Settings
- * 
- * Settings configuration for the WordPress Recipe Publish Handler.
- * Uses identical structure to Data Machine's WordPress publish handler.
- *
- * @package DM_Recipes\WordPressRecipePublish
- * @since 1.0.0
- */
-
 namespace DM_Recipes\WordPressRecipePublish;
 
-// Security: Prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Settings configuration for WordPress Recipe Publish handler.
+ * Manages form fields, validation, and configuration options.
+ */
 class WordPressRecipePublishSettings {
 
     /**
-     * Get Settings Fields for Data Machine UI
+     * Get configuration fields for recipe handler settings.
      * 
-     * Returns the settings fields identical to Data Machine WordPress publisher.
-     *
-     * @param array $current_config Current handler configuration
-     * @return array Settings fields
-     * @since 1.0.0
+     * @param array $current_config Current configuration values
+     * @return array Field configuration array
      */
     public static function get_fields( array $current_config = [] ) {
-        $fields = [];
-        
-        // Add local WordPress fields (post type, status, author, date)
-        $fields = array_merge( $fields, self::get_local_fields( $current_config ) );
-        
-        // Add dynamic taxonomy fields (categories, tags, custom taxonomies)
-        $fields = array_merge( $fields, self::get_taxonomy_fields( $current_config ) );
-        
-        return $fields;
+        return array_merge(
+            self::get_local_fields( $current_config ),
+            self::get_taxonomy_fields( $current_config )
+        );
     }
     
     /**
-     * Get Local WordPress Fields
+     * Get local WordPress settings fields (post type, status, author).
      * 
-     * Returns core WordPress publishing fields identical to Data Machine structure.
-     *
-     * @param array $current_config Current configuration
-     * @return array Local fields
-     * @since 1.0.0
+     * @param array $current_config Current configuration values
+     * @return array Local field configuration
      */
     private static function get_local_fields( array $current_config = [] ) {
-        // Get WordPress post types
         $post_types = get_post_types( [ 'public' => true ], 'objects' );
         $post_type_options = [];
         foreach ( $post_types as $post_type ) {
             $post_type_options[ $post_type->name ] = $post_type->label;
         }
         
-        // Get WordPress users for author selection
         $users = get_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
         $user_options = [];
         foreach ( $users as $user ) {
@@ -104,42 +84,33 @@ class WordPressRecipePublishSettings {
     }
     
     /**
-     * Get Dynamic Taxonomy Fields
+     * Get taxonomy selection fields for available WordPress taxonomies.
      * 
-     * Returns taxonomy selection fields identical to Data Machine structure.
-     *
-     * @param array $current_config Current configuration
-     * @return array Taxonomy fields
-     * @since 1.0.0
+     * @param array $current_config Current configuration values
+     * @return array Taxonomy field configuration
      */
     private static function get_taxonomy_fields( array $current_config = [] ) {
         $fields = [];
-        
-        // Get all public taxonomies, excluding nav_menu
         $taxonomies = get_taxonomies( [ 'public' => true ], 'objects' );
         
         foreach ( $taxonomies as $taxonomy ) {
-            // Skip nav_menu taxonomy like Data Machine does
-            if ( $taxonomy->name === 'nav_menu' ) {
+            if ( in_array( $taxonomy->name, ['nav_menu', 'post_format'], true ) ) {
                 continue;
             }
             
             $field_key = "taxonomy_{$taxonomy->name}_selection";
             
-            // Get all terms for this taxonomy
             $terms = get_terms( [
                 'taxonomy' => $taxonomy->name,
                 'hide_empty' => false,
                 'number' => 200
             ] );
             
-            // Build options array
             $options = [
                 'skip' => __( 'Skip', 'dm-recipes' ),
                 'ai_decides' => __( 'AI Decides', 'dm-recipes' )
             ];
             
-            // Add individual terms as options
             if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
                 foreach ( $terms as $term ) {
                     $options[ $term->term_id ] = $term->name;
@@ -164,37 +135,27 @@ class WordPressRecipePublishSettings {
     }
     
     /**
-     * Sanitize Settings
+     * Sanitize and validate settings input.
      * 
-     * Sanitizes settings identical to Data Machine WordPress publisher.
-     *
-     * @param array $raw_settings Raw form settings
-     * @return array Sanitized settings
-     * @since 1.0.0
+     * @param array $raw_settings Raw settings from form submission
+     * @return array Sanitized and validated settings
      */
     public static function sanitize( array $raw_settings ): array {
-        $sanitized = [];
-        
-        // Sanitize local WordPress settings
-        $sanitized = array_merge( $sanitized, self::sanitize_local_settings( $raw_settings ) );
-        
-        // Sanitize taxonomy selections
-        $sanitized = array_merge( $sanitized, self::sanitize_taxonomy_selections( $raw_settings ) );
-        
-        return $sanitized;
+        return array_merge(
+            self::sanitize_local_settings( $raw_settings ),
+            self::sanitize_taxonomy_selections( $raw_settings )
+        );
     }
     
     /**
-     * Sanitize Local WordPress Settings
-     *
-     * @param array $raw_settings Raw settings
+     * Sanitize local WordPress settings.
+     * 
+     * @param array $raw_settings Raw settings input
      * @return array Sanitized local settings
-     * @since 1.0.0
      */
     private static function sanitize_local_settings( array $raw_settings ): array {
         $sanitized = [];
         
-        // Post type
         if ( isset( $raw_settings['post_type'] ) ) {
             $post_type = sanitize_key( $raw_settings['post_type'] );
             if ( post_type_exists( $post_type ) ) {
@@ -202,7 +163,6 @@ class WordPressRecipePublishSettings {
             }
         }
         
-        // Post status
         if ( isset( $raw_settings['post_status'] ) ) {
             $status = sanitize_key( $raw_settings['post_status'] );
             $valid_statuses = [ 'draft', 'publish', 'pending', 'private' ];
@@ -211,7 +171,6 @@ class WordPressRecipePublishSettings {
             }
         }
         
-        // Post author
         if ( isset( $raw_settings['post_author'] ) ) {
             $author_id = intval( $raw_settings['post_author'] );
             if ( get_user_by( 'id', $author_id ) ) {
@@ -219,7 +178,6 @@ class WordPressRecipePublishSettings {
             }
         }
         
-        // Post date source
         if ( isset( $raw_settings['post_date_source'] ) ) {
             $date_source = sanitize_key( $raw_settings['post_date_source'] );
             $valid_sources = [ 'current_date', 'source_date' ];
@@ -232,21 +190,17 @@ class WordPressRecipePublishSettings {
     }
     
     /**
-     * Sanitize Taxonomy Selections
-     *
-     * @param array $raw_settings Raw settings
-     * @return array Sanitized taxonomy settings
-     * @since 1.0.0
+     * Sanitize taxonomy selection settings.
+     * 
+     * @param array $raw_settings Raw settings input
+     * @return array Sanitized taxonomy selections
      */
     private static function sanitize_taxonomy_selections( array $raw_settings ): array {
         $sanitized = [];
-        
-        // Get all public taxonomies (excluding nav_menu)
         $taxonomies = get_taxonomies( [ 'public' => true ] );
         
         foreach ( $taxonomies as $taxonomy_name ) {
-            // Skip nav_menu taxonomy
-            if ( $taxonomy_name === 'nav_menu' ) {
+            if ( in_array( $taxonomy_name, ['nav_menu', 'post_format'], true ) ) {
                 continue;
             }
             
@@ -255,11 +209,9 @@ class WordPressRecipePublishSettings {
             if ( isset( $raw_settings[ $field_key ] ) ) {
                 $value = $raw_settings[ $field_key ];
                 
-                // Handle 'skip' and 'ai_decides' 
                 if ( $value === 'skip' || $value === 'ai_decides' ) {
                     $sanitized[ $field_key ] = $value;
                 } else {
-                    // Handle numeric term ID selection
                     $term_id = intval( $value );
                     if ( $term_id > 0 && term_exists( $term_id, $taxonomy_name ) ) {
                         $sanitized[ $field_key ] = $term_id;
@@ -272,14 +224,10 @@ class WordPressRecipePublishSettings {
     }
     
     /**
-     * Requires Authentication
+     * Check if handler requires external authentication.
      * 
-     * Returns whether this handler requires authentication.
-     * Local WordPress publishing does not require authentication.
-     *
-     * @param array $current_config Current configuration
-     * @return bool False - no authentication required
-     * @since 1.0.0
+     * @param array $current_config Current configuration values
+     * @return bool Always returns false - no external auth required
      */
     public static function requires_authentication( array $current_config = [] ): bool {
         return false;

@@ -92,13 +92,20 @@ The block renders semantic HTML with microdata attributes:
 
 ### Post Meta Integration
 - Automatically includes `rating_value` and `review_count` post meta for aggregate ratings
-- Uses WordPress post author for Schema.org author markup
-- Falls back to post publication date for `datePublished`
+- Uses WordPress post author data for Schema.org author markup with name and URL
+- Falls back to post publication date for `datePublished` if not provided
+- Integrates with WordPress user system for author information
 
 ### Duration Formatting
 - Converts ISO 8601 duration format (PT30M) to human-readable format (30 minutes)
-- Handles hours and minutes combinations
-- Supports proper internationalization through text domain
+- Handles hours and minutes combinations with proper pluralization
+- Supports proper internationalization through `dm-recipes` text domain
+- Function: `dm_recipes_format_duration()` handles ISO 8601 parsing and formatting
+
+### Block Registration
+- Registered via `dm_recipes_register_recipe_schema_block()` on WordPress `init` hook
+- Server-side rendering callback: `dm_recipes_render_recipe_schema_block()`
+- JSON-LD generation: `dm_recipes_generate_recipe_jsonld()` for structured data output
 
 ## Text Domain Consistency
 All user-facing strings use the `dm-recipes` text domain for proper internationalization support.

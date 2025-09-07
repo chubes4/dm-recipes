@@ -83,9 +83,11 @@ The block generates both:
 ### Plugin Development
 ```bash
 # Install dependencies and run linting
-composer install && composer lint        # Install dependencies and run PHP linting
-composer lint:php                        # PHP CodeSniffer checks only
-composer lint:fix:php                    # Auto-fix PHP coding standard issues
+composer install                         # Install development dependencies
+composer lint                            # Run PHP CodeSniffer checks
+composer lint:fix                        # Auto-fix PHP coding standard issues
+composer lint:php                        # PHP CodeSniffer with WordPress standards
+composer lint:fix:php                    # Auto-fix with WordPress standards
 ```
 
 ### Production Build Process
@@ -130,12 +132,20 @@ The `WordPressRecipePublishFilters.php` file is fully implemented and registers 
 ### AI Tool Integration ✅
 The handler fully implements the `handle_tool_call()` method with comprehensive parameter processing, WordPress post creation, Recipe Schema block embedding, error handling, and detailed success/failure responses for AI agents.
 
+### Gutenberg Block Implementation ✅ 
+Recipe Schema block is fully implemented with comprehensive Schema.org support:
+- `block.json` - Complete attribute definition matching Schema.org Recipe specification
+- `recipe-schema.php` - Server-side rendering with microdata and JSON-LD output
+- Supports all core properties: timing, ingredients, instructions, nutrition, media, equipment
+- Includes rating system integration via WordPress post meta
+- Duration formatting utility for human-readable time display
+
 ### Build System ✅
 Production build system is fully implemented:
 - `build.sh` - Complete production ZIP creation with validation
 - `composer.json` - PHP dependency management with PSR-4 autoloading and linting scripts
-- `.buildignore` - Development file exclusion patterns (referenced in build.sh)
-- No npm/JavaScript build system (not required for this implementation)
+- `.buildignore` - Development file exclusion patterns for clean distribution
+- Automated file validation ensures all essential files are included in builds
 
 
 ## Data Machine Integration Points
