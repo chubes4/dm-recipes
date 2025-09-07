@@ -1,0 +1,126 @@
+{
+    "apiVersion": 2,
+    "name": "dm-recipes/recipe-schema",
+    "title": "Recipe Schema",
+    "category": "common",
+    "icon": "food",
+    "description": "Complete Schema.org Recipe structured data block with all recipe properties",
+    "textdomain": "dm-recipes",
+    "editorScript": "recipe-schema-editor-script",
+    "editorStyle": "recipe-schema-editor-style",
+    "style": "recipe-schema-style",
+    "supports": {
+        "html": false,
+        "align": false
+    },
+    "attributes": {
+        "recipeName": {
+            "type": "string",
+            "default": ""
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        },
+        "images": {
+            "type": "array",
+            "default": []
+        },
+        "prepTime": {
+            "type": "string",
+            "default": ""
+        },
+        "cookTime": {
+            "type": "string",
+            "default": ""
+        },
+        "totalTime": {
+            "type": "string",
+            "default": ""
+        },
+        "recipeYield": {
+            "type": "string",
+            "default": ""
+        },
+        "recipeCategory": {
+            "type": "array",
+            "default": []
+        },
+        "recipeCuisine": {
+            "type": "string",
+            "default": ""
+        },
+        "recipeIngredient": {
+            "type": "array",
+            "default": []
+        },
+        "recipeInstructions": {
+            "type": "array",
+            "default": []
+        },
+        "nutrition": {
+            "type": "object",
+            "default": {
+                "calories": "",
+                "carbohydrateContent": "",
+                "cholesterolContent": "",
+                "fatContent": "",
+                "fiberContent": "",
+                "proteinContent": "",
+                "saturatedFatContent": "",
+                "servingSize": "",
+                "sodiumContent": "",
+                "sugarContent": "",
+                "transFatContent": "",
+                "unsaturatedFatContent": ""
+            }
+        },
+        "suitableForDiet": {
+            "type": "array",
+            "default": []
+        },
+        "keywords": {
+            "type": "array",
+            "default": []
+        },
+        "cookingMethod": {
+            "type": "string",
+            "default": ""
+        },
+        "video": {
+            "type": "object",
+            "default": {
+                "name": "",
+                "description": "",
+                "thumbnailUrl": "",
+                "contentUrl": "",
+                "embedUrl": "",
+                "uploadDate": "",
+                "duration": ""
+            }
+        },
+        "author": {
+            "type": "object",
+            "default": {
+                "name": "",
+                "url": ""
+            }
+        },
+        "datePublished": {
+            "type": "string",
+            "default": ""
+        },
+        "estimatedCost": {
+            "type": "string",
+            "default": ""
+        },
+        "tool": {
+            "type": "array",
+            "default": []
+        },
+        "supply": {
+            "type": "array",
+            "default": []
+        }
+    }
+}

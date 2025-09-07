@@ -1,0 +1,50 @@
+{
+    "name": "chubes4/dm-recipes",
+    "description": "Data Machine extension for publishing recipes with Schema.org structured data",
+    "type": "wordpress-plugin",
+    "keywords": ["wordpress", "plugin", "recipes", "schema.org", "data-machine", "ai"],
+    "homepage": "https://github.com/chubes4/dm-recipes",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Chris Huber",
+            "email": "chris@chubes.net",
+            "homepage": "https://chubes.net"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.7",
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DM_Recipes\\": "inc/handlers/"
+        }
+    },
+    "scripts": {
+        "lint": "vendor/bin/phpcs",
+        "lint:fix": "vendor/bin/phpcbf",
+        "lint:php": "vendor/bin/phpcs --standard=WordPress .",
+        "lint:fix:php": "vendor/bin/phpcbf --standard=WordPress .",
+        "post-install-cmd": [
+            "@php -r \"if (file_exists('vendor/bin/phpcs')) { shell_exec('vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/phpcompatibility-wp'); }\""
+        ],
+        "post-update-cmd": [
+            "@php -r \"if (file_exists('vendor/bin/phpcs')) { shell_exec('vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/phpcompatibility-wp'); }\""
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

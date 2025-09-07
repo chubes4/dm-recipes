@@ -1,0 +1,29 @@
+# WordPress plugin development exclusions
+.DS_Store
+vendor/
+node_modules/
+dist/
+composer.lock
+package-lock.json
+
+# IDE files
+.vscode/
+.idea/
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# WordPress specific
+wp-config-local.php
+wp-content/uploads/
+
+# Build artifacts
+*.zip
+
+# Debug files
+debug.log
+error_log
