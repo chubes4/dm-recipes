@@ -1,0 +1,297 @@
+/**
+ * Recipe Schema Block Styles
+ * 
+ * Styling for both the editor interface and frontend display
+ * of the Recipe Schema block
+ */
+
+/* Editor Styles */
+.recipe-schema-block-editor {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    margin: 10px 0;
+}
+
+.recipe-schema-block-editor h3 {
+    margin-top: 0;
+    color: #555;
+}
+
+.recipe-schema-block-editor h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.recipe-schema-block-editor p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.recipe-schema-block-editor ul,
+.recipe-schema-block-editor ol {
+    margin-left: 20px;
+}
+
+.recipe-schema-block-editor ul li,
+.recipe-schema-block-editor ol li {
+    margin-bottom: 5px;
+}
+
+.recipe-schema-block-editor .components-notice {
+    margin-top: 15px;
+}
+
+/* Inspector Controls Styling */
+.recipe-duration-input {
+    margin-bottom: 15px;
+}
+
+.recipe-duration-input label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.recipe-duration-input .components-base-control {
+    margin-bottom: 0;
+}
+
+.recipe-array-input {
+    margin-bottom: 20px;
+}
+
+.recipe-array-input label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.recipe-array-input .components-textarea-control,
+.recipe-array-input .components-text-control {
+    flex: 1;
+}
+
+.recipe-array-input .components-button {
+    flex-shrink: 0;
+    align-self: flex-end;
+}
+
+.recipe-tag-input {
+    margin-bottom: 15px;
+}
+
+.recipe-tag-input label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.recipe-tag-input .recipe-tag {
+    font-size: 12px;
+    cursor: default;
+}
+
+.recipe-tag-input .recipe-tag button {
+    color: #666;
+    font-weight: bold;
+}
+
+.recipe-tag-input .recipe-tag button:hover {
+    color: #d00;
+}
+
+/* Frontend Block Styles */
+.recipe-schema-block {
+    margin: 30px 0;
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+
+.recipe-schema-block .recipe-name {
+    font-size: 2em;
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 2px solid #007cba;
+    padding-bottom: 10px;
+}
+
+.recipe-schema-block .recipe-description {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #555;
+    font-style: italic;
+}
+
+.recipe-schema-block .recipe-images {
+    margin-bottom: 25px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.recipe-schema-block .recipe-images img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recipe-schema-block .recipe-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 6px;
+    border-left: 4px solid #007cba;
+}
+
+.recipe-schema-block .recipe-meta div {
+    font-size: 0.95em;
+}
+
+.recipe-schema-block .recipe-meta div strong {
+    color: #007cba;
+    font-weight: 600;
+}
+
+.recipe-schema-block .recipe-ingredients {
+    margin-bottom: 25px;
+}
+
+.recipe-schema-block .recipe-ingredients h3 {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #007cba;
+}
+
+.recipe-schema-block .recipe-ingredients ul {
+    list-style: none;
+    padding: 0;
+}
+
+.recipe-schema-block .recipe-ingredients ul li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 20px;
+}
+
+.recipe-schema-block .recipe-ingredients ul li:before {
+    content: "•";
+    color: #007cba;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.recipe-schema-block .recipe-ingredients ul li:last-child {
+    border-bottom: none;
+}
+
+.recipe-schema-block .recipe-instructions {
+    margin-bottom: 25px;
+}
+
+.recipe-schema-block .recipe-instructions h3 {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #007cba;
+}
+
+.recipe-schema-block .recipe-instructions ol {
+    counter-reset: step-counter;
+    list-style: none;
+    padding: 0;
+}
+
+.recipe-schema-block .recipe-instructions ol li {
+    counter-increment: step-counter;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border-radius: 6px;
+    border-left: 4px solid #007cba;
+    position: relative;
+}
+
+.recipe-schema-block .recipe-instructions ol li:before {
+    content: counter(step-counter);
+    position: absolute;
+    left: -15px;
+    top: 15px;
+    background-color: #007cba;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .recipe-schema-block {
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .recipe-schema-block .recipe-name {
+        font-size: 1.6em;
+    }
+    
+    .recipe-schema-block .recipe-meta {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .recipe-schema-block .recipe-images {
+        grid-template-columns: 1fr;
+    }
+    
+    .recipe-schema-block .recipe-images img {
+        height: 250px;
+    }
+    
+    .recipe-schema-block .recipe-instructions ol li {
+        padding-left: 30px;
+    }
+    
+    .recipe-schema-block .recipe-instructions ol li:before {
+        left: -10px;
+        width: 20px;
+        height: 20px;
+        font-size: 0.8em;
+    }
+}
+
+/* Print styles */
+@media print {
+    .recipe-schema-block {
+        border: 1px solid #000;
+        background-color: transparent;
+        page-break-inside: avoid;
+    }
+    
+    .recipe-schema-block .recipe-images {
+        display: none; /* Save ink */
+    }
+    
+    .recipe-schema-block .recipe-instructions ol li:before {
+        background-color: #000;
+    }
+}

@@ -5,8 +5,30 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * WordPress Recipe Publish Handler
+ * 
+ * Handles AI tool execution for recipe publishing with comprehensive Schema.org structured data.
+ * Integrates with Data Machine's filter-based architecture to create WordPress posts with
+ * embedded Recipe Schema blocks for optimal SEO and rich snippets.
+ * 
+ * @package DM_Recipes\WordPressRecipePublish
+ * @since 1.0.0
+ */
 class WordPressRecipePublish {
 
+    /**
+     * Handle AI tool execution for recipe publishing.
+     * 
+     * Creates a WordPress post with the provided content and embeds a Recipe Schema block
+     * containing comprehensive Schema.org structured data. Processes configuration from
+     * Data Machine's handler settings including taxonomy assignments.
+     * 
+     * @param array $parameters AI tool parameters containing recipe data and post content
+     * @param array $tool_def   Tool definition with handler configuration
+     * @return array Success/failure response with post details for AI agent
+     * @since 1.0.0
+     */
     public function handle_tool_call( array $parameters, array $tool_def = [] ): array {
         if ( empty( $parameters['post_title'] ) ) {
             return [
@@ -15,14 +37,47 @@ class WordPressRecipePublish {
             ];
         }
 
-        $handler_config = $this->validate_handler_config( $tool_def['handler_config'] ?? [], $parameters );
-        if ( ! $handler_config['valid'] ) {
+        // Extract config using Data Machine pattern (handles nested structure) - NO FALLBACKS
+        if ( empty( $tool_def['handler_config'] ) ) {
             return [
                 'success' => false,
-                'error' => 'Handler configuration error: ' . $handler_config['error']
+                'error' => 'Missing handler_config in tool definition'
             ];
         }
-        $handler_config = $handler_config['config'];
+        
+        $handler_config = $tool_def['handler_config']['wordpress_recipe_publish'] ?? $tool_def['handler_config'];
+        
+        if ( empty( $handler_config ) ) {
+            return [
+                'success' => false,
+                'error' => 'Empty handler configuration for wordpress_recipe_publish'
+            ];
+        }
+        
+        // Validate required configuration settings - NO FALLBACKS
+        if ( empty( $handler_config['post_type'] ) ) {
+            return [
+                'success' => false,
+                'error' => 'Missing required post_type in handler configuration'
+            ];
+        }
+        
+        if ( empty( $handler_config['post_status'] ) ) {
+            return [
+                'success' => false,
+                'error' => 'Missing required post_status in handler configuration'
+            ];
+        }
+        
+        if ( empty( $handler_config['post_author'] ) ) {
+            return [
+                'success' => false,
+                'error' => 'Missing required post_author in handler configuration'
+            ];
+        }
+        
+        // Apply global defaults like Data Machine WordPress publisher
+        $handler_config = apply_filters('dm_apply_global_defaults', $handler_config, 'wordpress_recipe_publish', 'publish');
 
         // Create recipe schema block using AI parameters
         $recipe_block_result = $this->create_recipe_schema_block( $parameters, $handler_config );
@@ -35,7 +90,7 @@ class WordPressRecipePublish {
         }
 
         // Append recipe block to AI-generated article content
-        $content = wp_kses_post( $parameters['post_content'] ?? '' );
+        $content = wp_kses_post( wp_unslash( $parameters['post_content'] ?? '' ) );
         $content .= "\n\n" . $recipe_block_result['block'];
 
         $post_data = [
@@ -46,11 +101,6 @@ class WordPressRecipePublish {
             'post_type' => $handler_config['post_type']
         ];
 
-        $category_id = intval( $parameters['post_category'] ?? $handler_config['taxonomy_category_selection'] ?? 0 );
-        if ( $category_id > 0 && term_exists( $category_id, 'category' ) ) {
-            $post_data['post_category'] = [ $category_id ];
-        }
-
         $post_id = wp_insert_post( $post_data );
 
         if ( is_wp_error( $post_id ) || ! $post_id ) {
@@ -59,16 +109,33 @@ class WordPressRecipePublish {
                 'error' => 'Failed to create post: ' . ( is_wp_error( $post_id ) ? $post_id->get_error_message() : 'Invalid post ID' )
             ];
         }
+        
+        // Process taxonomies using Data Machine's system (after successful post creation)
+        $taxonomy_results = $this->process_taxonomies_from_settings( $post_id, $parameters, $handler_config );
+        
 
         return [
             'success' => true,
             'message' => 'Recipe post created successfully',
             'post_id' => $post_id,
             'post_url' => get_permalink( $post_id ),
-            'edit_url' => get_edit_post_link( $post_id, 'raw' )
+            'edit_url' => get_edit_post_link( $post_id, 'raw' ),
+            'taxonomy_results' => $taxonomy_results
         ];
     }
     
+    /**
+     * Create Recipe Schema Gutenberg block from AI parameters.
+     * 
+     * Transforms AI-provided recipe data into a properly formatted Gutenberg block
+     * with comprehensive Schema.org Recipe attributes. Handles sanitization,
+     * validation, and JSON encoding for block attributes.
+     * 
+     * @param array $parameters     AI tool parameters containing recipe data
+     * @param array $handler_config Handler configuration for author attribution
+     * @return array Success/failure response with generated block HTML
+     * @since 1.0.0
+     */
     private function create_recipe_schema_block( array $parameters, array $handler_config = [] ): array {
         // Build recipe data from AI parameters
         $recipe_data = [
@@ -96,8 +163,8 @@ class WordPressRecipePublish {
             }, $parameters['images'] );
         }
         
-        // Set author data from handler configuration
-        $author_user = get_userdata( $handler_config['post_author'] ?? 0 );
+        // Set author data from handler configuration - NO FALLBACKS
+        $author_user = get_userdata( $handler_config['post_author'] );
         if ( $author_user ) {
             $recipe_data['author'] = [
                 'name' => sanitize_text_field( $author_user->display_name ),
@@ -153,6 +220,16 @@ class WordPressRecipePublish {
         ];
     }
     
+    /**
+     * Sanitize array input for recipe data.
+     * 
+     * Filters and sanitizes array values, removing empty entries and applying
+     * sanitize_text_field to each element for security.
+     * 
+     * @param mixed $input Raw input to sanitize
+     * @return array Sanitized array with filtered, clean values
+     * @since 1.0.0
+     */
     private function sanitize_array( $input ): array {
         if ( ! is_array( $input ) ) {
             return [];
@@ -160,37 +237,139 @@ class WordPressRecipePublish {
         return array_map( 'sanitize_text_field', array_filter( $input ) );
     }
     
-    private function validate_handler_config( array $handler_config, array $parameters ): array {
-        $handler_settings = $handler_config['wordpress_recipe_publish'] ?? $handler_config;
-        $validated_config = [];
-
-        $post_status = $parameters['post_status'] ?? $handler_settings['post_status'] ?? 'draft';
-        if ( ! in_array( $post_status, [ 'draft', 'publish', 'private', 'pending' ], true ) ) {
-            $post_status = 'draft';
+    /**
+     * Process taxonomies based on handler configuration settings.
+     * Copied from Data Machine WordPress publisher.
+     *
+     * @param int $post_id Post ID.
+     * @param array $parameters AI tool parameters.
+     * @param array $handler_config Handler configuration from settings.
+     * @return array Taxonomy processing results.
+     */
+    private function process_taxonomies_from_settings(int $post_id, array $parameters, array $handler_config): array {
+        $taxonomy_results = [];
+        
+        // Get all public taxonomies to process
+        $taxonomies = get_taxonomies(['public' => true], 'objects');
+        
+        foreach ($taxonomies as $taxonomy) {
+            // Skip built-in formats and other non-content taxonomies
+            if (in_array($taxonomy->name, ['post_format', 'nav_menu', 'link_category'])) {
+                continue;
+            }
+            
+            $field_key = "taxonomy_{$taxonomy->name}_selection";
+            
+            // NO FALLBACKS - taxonomy selection must be explicitly configured
+            if ( ! isset( $handler_config[$field_key] ) ) {
+                $taxonomy_results[$taxonomy->name] = [
+                    'success' => false,
+                    'error' => "Missing taxonomy configuration: {$field_key}"
+                ];
+                continue;
+            }
+            
+            $selection = $handler_config[$field_key];
+            
+            if ($selection === 'skip') {
+                // Skip - no assignment for this taxonomy
+                continue;
+                
+            } elseif ($selection === 'ai_decides') {
+                // AI Decides - use AI-provided parameter if available
+                $param_name = $taxonomy->name === 'category' ? 'category' : 
+                             ($taxonomy->name === 'post_tag' ? 'tags' : $taxonomy->name);
+                
+                if (!empty($parameters[$param_name])) {
+                    $taxonomy_result = $this->assign_taxonomy($post_id, $taxonomy->name, $parameters[$param_name]);
+                    $taxonomy_results[$taxonomy->name] = $taxonomy_result;
+                }
+                
+            } elseif (is_numeric($selection)) {
+                // Specific term ID selected - assign that term
+                $term_id = absint($selection);
+                $term = get_term($term_id, $taxonomy->name);
+                
+                if (!is_wp_error($term) && $term) {
+                    $result = wp_set_object_terms($post_id, [$term_id], $taxonomy->name);
+                    
+                    if (is_wp_error($result)) {
+                        $taxonomy_results[$taxonomy->name] = [
+                            'success' => false,
+                            'error' => $result->get_error_message()
+                        ];
+                    } else {
+                        $taxonomy_results[$taxonomy->name] = [
+                            'success' => true,
+                            'taxonomy' => $taxonomy->name,
+                            'term_count' => 1,
+                            'terms' => [$term->name]
+                        ];
+                    }
+                }
+            }
         }
-        $validated_config['post_status'] = $post_status;
-
-        $post_author = intval( $parameters['post_author'] ?? $handler_settings['post_author'] ?? get_current_user_id() );
-        if ( $post_author <= 0 || ! get_userdata( $post_author ) ) {
-            $post_author = get_current_user_id();
-            if ( $post_author <= 0 ) {
+        
+        return $taxonomy_results;
+    }
+    
+    /**
+     * Assign custom taxonomy to post.
+     * Copied from Data Machine WordPress publisher.
+     *
+     * @param int $post_id Post ID.
+     * @param string $taxonomy_name Taxonomy name.
+     * @param mixed $taxonomy_value Taxonomy value (string or array).
+     * @return array Assignment result.
+     */
+    private function assign_taxonomy(int $post_id, string $taxonomy_name, $taxonomy_value): array {
+        // Validate taxonomy exists
+        if (!taxonomy_exists($taxonomy_name)) {
+            return [
+                'success' => false,
+                'error' => "Taxonomy '{$taxonomy_name}' does not exist"
+            ];
+        }
+        
+        $taxonomy_obj = get_taxonomy($taxonomy_name);
+        $term_ids = [];
+        
+        // Handle array of terms or single term
+        $terms = is_array($taxonomy_value) ? $taxonomy_value : [$taxonomy_value];
+        
+        foreach ($terms as $term_name) {
+            $term_name = sanitize_text_field($term_name);
+            if (empty($term_name)) continue;
+            
+            // Get or create term
+            $term = get_term_by('name', $term_name, $taxonomy_name);
+            if (!$term) {
+                $term_result = wp_insert_term($term_name, $taxonomy_name);
+                if (is_wp_error($term_result)) {
+                    continue;
+                }
+                $term_ids[] = $term_result['term_id'];
+            } else {
+                $term_ids[] = $term->term_id;
+            }
+        }
+        
+        if (!empty($term_ids)) {
+            $result = wp_set_object_terms($post_id, $term_ids, $taxonomy_name);
+            if (is_wp_error($result)) {
                 return [
-                    'valid' => false,
-                    'error' => 'No valid post author available'
+                    'success' => false,
+                    'error' => $result->get_error_message()
                 ];
             }
         }
-        $validated_config['post_author'] = $post_author;
-
-        $post_type = $handler_settings['post_type'] ?? 'post';
-        if ( ! post_type_exists( $post_type ) ) {
-            $post_type = 'post';
-        }
-        $validated_config['post_type'] = $post_type;
-
+        
         return [
-            'valid' => true,
-            'config' => $validated_config
+            'success' => true,
+            'taxonomy' => $taxonomy_name,
+            'term_count' => count($term_ids),
+            'terms' => $terms
         ];
     }
+    
 }

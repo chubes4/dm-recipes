@@ -23,6 +23,13 @@ if [ -f "composer.json" ]; then
     composer install --no-dev --optimize-autoloader --no-interaction
 fi
 
+# Build Gutenberg blocks
+echo "🏗️  Building Gutenberg blocks..."
+if [ -f "package.json" ]; then
+    npm ci --silent
+    npm run build --silent
+fi
+
 # Copy files using rsync with manual exclusions
 echo "📋 Copying plugin files..."
 rsync -av \
@@ -31,10 +38,12 @@ rsync -av \
     --exclude='vendor/' \
     --exclude='.git' \
     --exclude='node_modules/' \
+    --exclude='src/' \
     --exclude='.buildignore' \
     --exclude='build.sh' \
     --exclude='composer.lock' \
     --exclude='package-lock.json' \
+    --exclude='webpack.config.js' \
     --exclude='.DS_Store' \
     --exclude='.claude/' \
     --exclude='CLAUDE.md' \
@@ -48,7 +57,8 @@ REQUIRED_FILES=(
     "inc/handlers/WordPressRecipePublish/WordPressRecipePublish.php"
     "inc/handlers/WordPressRecipePublish/WordPressRecipePublishFilters.php"
     "inc/blocks/recipe-schema/recipe-schema.php"
-    "inc/blocks/recipe-schema/block.json"
+    "build/recipe-schema/block.json"
+    "build/recipe-schema/index.js"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do

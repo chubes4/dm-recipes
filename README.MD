@@ -32,8 +32,14 @@ A WordPress plugin that extends Data Machine with comprehensive recipe publishin
 git clone https://github.com/chubes4/dm-recipes.git
 cd dm-recipes
 
-# Install dependencies
+# Install PHP dependencies
 composer install
+
+# Install npm dependencies for Gutenberg block development
+npm install
+
+# Build frontend assets
+npm run build
 
 # Create production build
 ./build.sh
@@ -83,28 +89,35 @@ The `recipe_publish` tool accepts comprehensive recipe data:
 ### Commands
 ```bash
 # Install dependencies
-composer install
+composer install                         # PHP dependencies
+npm install                              # Frontend dependencies
 
-# Run PHP linting
-composer lint
+# Frontend development (Gutenberg blocks)
+npm run start                            # Development with hot reload
+npm run build                            # Production build for blocks
+npm run lint:js                          # JavaScript linting
+npm run lint:css                         # CSS linting
+npm run format                           # Auto-format code
 
-# Auto-fix coding standards
-composer lint:fix
+# PHP development
+composer lint                            # Run PHP CodeSniffer
+composer lint:fix                        # Auto-fix coding standards
+composer lint:php                        # WordPress-specific linting
+composer lint:fix:php                    # WordPress auto-fix
 
-# WordPress-specific linting
-composer lint:php
-composer lint:fix:php
-
-# Create production build
-./build.sh
+# Production build (dual system)
+./build.sh                               # Complete production build with validation
 ```
 
 ### Build System
-- **Automated ZIP Creation**: Production-ready plugin packages via `build.sh`
-- **Dependency Management**: Composer with PSR-4 autoloading and development tools
-- **Code Quality**: PHP CodeSniffer with WordPress coding standards integration
-- **File Validation**: Build process validates all essential plugin files are included
-- **Clean Distribution**: `.buildignore` excludes development files from production builds
+- **Dual Build Architecture**: Frontend (npm/wp-scripts) + Backend (Composer/PHP) build systems
+- **Modern Gutenberg Development**: React components compiled from `src/` to `build/` with @wordpress/scripts
+- **Automated ZIP Creation**: Production-ready plugin packages via `build.sh` with comprehensive validation
+- **Dependency Management**: Separate PHP (Composer) and JavaScript (npm) dependency trees
+- **Code Quality**: PHP CodeSniffer with WordPress standards + ESLint/Stylelint for frontend
+- **Asset Compilation**: Source files transformed to production-optimized JavaScript and CSS
+- **File Validation**: Build process validates both compiled assets and essential plugin files
+- **Clean Distribution**: Excludes source files, development dependencies, and build tools from production
 
 ## Architecture
 
@@ -119,18 +132,27 @@ Self-registering via WordPress filters:
 ```
 dm-recipes/
 ├── dm-recipes.php                       # Main plugin file with autoloader
-├── build.sh                             # Production build script with validation
-├── composer.json                        # Dependencies, autoloading, and linting scripts
-├── .buildignore                         # Development file exclusion patterns
+├── build.sh                             # Dual-system production build script
+├── composer.json                        # PHP dependencies, autoloading, linting scripts
+├── package.json                         # npm dependencies and wp-scripts configuration
+├── src/                                 # Frontend source files
+│   └── recipe-schema/                   # React components and block source
+│       ├── index.js                     # Sophisticated React editor interface
+│       ├── block.json                   # Block definition with Schema.org attributes
+│       └── style.scss                   # Block styling
+├── build/                               # Compiled frontend assets (auto-generated)
+│   └── recipe-schema/                   # Production-ready JavaScript and assets
+│       ├── index.js                     # Compiled React components
+│       ├── block.json                   # Processed block definition
+│       └── index.asset.php              # WordPress asset dependencies
 ├── inc/
 │   ├── handlers/WordPressRecipePublish/ # Data Machine handler implementation
-│   │   ├── WordPressRecipePublish.php   # Main handler with tool call method
-│   │   ├── WordPressRecipePublishFilters.php  # Filter registration system
+│   │   ├── WordPressRecipePublish.php   # Main handler with AI tool call method
+│   │   ├── WordPressRecipePublishFilters.php  # Filter-based registration system
 │   │   └── WordPressRecipePublishSettings.php # Configuration management
-│   └── blocks/recipe-schema/            # Gutenberg Recipe Schema block
-│       ├── block.json                   # Complete Schema.org Recipe attributes
+│   └── blocks/recipe-schema/            # Server-side block registration
 │       ├── recipe-schema.php            # Block rendering with microdata/JSON-LD
-│       └── index.php                    # Block registration hooks
+│       └── index.php                    # Block initialization hooks
 └── .claude/
     └── recipe-schema.md                 # Schema.org implementation reference
 ```

@@ -184,7 +184,7 @@ const TagInput = ({ label, tags, onChange }) => {
 /**
  * Register Recipe Schema Block
  */
-registerBlockType('recipe-schema/block', {
+registerBlockType('dm-recipes/recipe-schema', {
     title: __('Recipe Schema', 'dm-recipes'),
     icon: 'food',
     category: 'common',

@@ -25,6 +25,7 @@ define( 'DM_RECIPES_PLUGIN_FILE', __FILE__ );
 define( 'DM_RECIPES_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DM_RECIPES_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
+// PSR-4 autoloader for DM_Recipes namespace
 spl_autoload_register( function( $class_name ) {
     if ( strpos( $class_name, 'DM_Recipes\\' ) !== 0 ) {
         return;
@@ -40,19 +41,30 @@ spl_autoload_register( function( $class_name ) {
 } );
 
 /**
- * Initialize plugin functionality.
- * Loads textdomain and registers filters and blocks.
+ * Initialize DM-Recipes plugin functionality.
+ * 
+ * Loads translation textdomain, registers Data Machine handler filters,
+ * and initializes Recipe Schema Gutenberg block. Called on WordPress 'init' hook.
+ * 
+ * @since 1.0.0
  */
-
 function dm_recipes_init() {
     load_plugin_textdomain( 'dm-recipes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     require_once DM_RECIPES_PLUGIN_DIR . 'inc/handlers/WordPressRecipePublish/WordPressRecipePublishFilters.php';
-    require_once DM_RECIPES_PLUGIN_DIR . 'inc/blocks/recipe-schema/index.php';
+    require_once DM_RECIPES_PLUGIN_DIR . 'inc/blocks/recipe-schema/recipe-schema.php';
+    
+    // Initialize Recipe Schema Gutenberg block
+    dm_recipes_register_recipe_schema_block();
 }
 
 /**
- * Plugin activation hook.
- * Validates Data Machine dependency and flushes rewrite rules.
+ * Plugin activation callback.
+ * 
+ * Validates Data Machine plugin dependency is active before allowing activation.
+ * Deactivates self and displays error if dependency not met. Flushes rewrite
+ * rules to ensure proper URL structure.
+ * 
+ * @since 1.0.0
  */
 function dm_recipes_activate() {
     if ( ! is_plugin_active( 'data-machine/data-machine.php' ) ) {
@@ -67,8 +79,12 @@ function dm_recipes_activate() {
 }
 
 /**
- * Plugin deactivation hook.
- * Flushes rewrite rules on deactivation.
+ * Plugin deactivation callback.
+ * 
+ * Performs cleanup operations including flushing rewrite rules
+ * to remove any custom URL structures.
+ * 
+ * @since 1.0.0
  */
 function dm_recipes_deactivate() {
     flush_rewrite_rules();
@@ -77,4 +93,4 @@ function dm_recipes_deactivate() {
 register_activation_hook( __FILE__, 'dm_recipes_activate' );
 register_deactivation_hook( __FILE__, 'dm_recipes_deactivate' );
 
-add_action( 'plugins_loaded', 'dm_recipes_init' );
+add_action( 'init', 'dm_recipes_init' );

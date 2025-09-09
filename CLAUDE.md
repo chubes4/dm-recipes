@@ -13,10 +13,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Filter Registration**: `WordPressRecipePublishFilters.php` - Handler and AI tool discovery
 - **Settings Management**: `WordPressRecipePublishSettings.php` - Configuration handling
 
-#### Recipe Schema Gutenberg Block (`/inc/blocks/recipe-schema/`)
-- **Block Definition**: `block.json` - Complete Schema.org Recipe attributes
-- **Server Rendering**: `recipe-schema.php` - Block registration and HTML/JSON-LD output  
-- **Block Initialization**: `index.php` - WordPress hook registration
+#### Recipe Schema Gutenberg Block (Modern React Implementation)
+- **Source Files**: `/src/recipe-schema/` - React components and block definitions
+- **Compiled Assets**: `/build/recipe-schema/` - Production-ready JavaScript and JSON files
+- **Server Components**: `/inc/blocks/recipe-schema/` - PHP registration and rendering
+- **React Editor Interface**: Sophisticated UI with duration inputs, array managers, and tag components
 
 ## Integration with Data Machine
 
@@ -80,9 +81,20 @@ The block generates both:
 
 ## Development Commands
 
-### Plugin Development
+### Frontend Development (Gutenberg Blocks)
 ```bash
-# Install dependencies and run linting
+# Install npm dependencies
+npm install                              # Install @wordpress/scripts and React dependencies
+npm run start                            # Development with hot reload and file watching
+npm run build                            # Production build (compiles src/ to build/)
+npm run lint:js                          # ESLint JavaScript checks
+npm run lint:css                         # Stylelint CSS checks
+npm run format                           # Auto-format JavaScript and CSS
+```
+
+### PHP Development
+```bash
+# Install PHP dependencies and linting
 composer install                         # Install development dependencies
 composer lint                            # Run PHP CodeSniffer checks
 composer lint:fix                        # Auto-fix PHP coding standard issues
@@ -92,15 +104,16 @@ composer lint:fix:php                    # Auto-fix with WordPress standards
 
 ### Production Build Process
 ```bash
-# Production deployment
-./build.sh                               # Create production ZIP file
+# Dual build system deployment
+./build.sh                               # Complete production build
 
 # Process:
-# 1. Install production dependencies (composer install --no-dev)
-# 2. Copy files using rsync with .buildignore exclusions  
-# 3. Create versioned ZIP file for WordPress deployment
-# 4. Validate all required files are present
-# 5. Restore development dependencies
+# 1. Install production PHP dependencies (composer install --no-dev)
+# 2. Install npm dependencies and run frontend build (npm ci && npm run build)
+# 3. Copy files using rsync excluding development files and source directories
+# 4. Validate all required files including compiled build/ assets
+# 5. Create versioned ZIP file for WordPress deployment
+# 6. Restore development dependencies
 ```
 
 ## File Structure
@@ -108,15 +121,25 @@ composer lint:fix:php                    # Auto-fix with WordPress standards
 ```
 dm-recipes/
 ├── dm-recipes.php                       # Main plugin file
-├── build.sh                             # Production build script
+├── build.sh                             # Production build script with dual-system support
 ├── composer.json                        # PHP dependencies and autoloading
+├── package.json                         # npm dependencies and wp-scripts
+├── src/                                 # Frontend source files
+│   └── recipe-schema/                   # React components and block source
+│       ├── index.js                     # React editor interface with UI components
+│       ├── block.json                   # Block definition and attributes
+│       └── style.scss                   # Block styling
+├── build/                               # Compiled frontend assets (generated)
+│   └── recipe-schema/                   # Production-ready JavaScript and assets
+│       ├── index.js                     # Compiled React editor
+│       ├── block.json                   # Processed block definition
+│       └── index.asset.php              # WordPress asset dependencies
 ├── inc/
 │   ├── handlers/WordPressRecipePublish/ # Data Machine handler implementation
 │   │   ├── WordPressRecipePublish.php   # Main handler class
 │   │   ├── WordPressRecipePublishFilters.php  # Filter registration
 │   │   └── WordPressRecipePublishSettings.php # Configuration
-│   └── blocks/recipe-schema/            # Gutenberg block implementation
-│       ├── block.json                   # Schema.org Recipe attributes
+│   └── blocks/recipe-schema/            # Server-side block registration
 │       ├── recipe-schema.php            # Block registration/rendering
 │       └── index.php                    # Block initialization
 ├── README.MD                            # Plugin documentation
@@ -133,19 +156,24 @@ The `WordPressRecipePublishFilters.php` file is fully implemented and registers 
 The handler fully implements the `handle_tool_call()` method with comprehensive parameter processing, WordPress post creation, Recipe Schema block embedding, error handling, and detailed success/failure responses for AI agents.
 
 ### Gutenberg Block Implementation ✅ 
-Recipe Schema block is fully implemented with comprehensive Schema.org support:
-- `block.json` - Complete attribute definition matching Schema.org Recipe specification
-- `recipe-schema.php` - Server-side rendering with microdata and JSON-LD output
-- Supports all core properties: timing, ingredients, instructions, nutrition, media, equipment
-- Includes rating system integration via WordPress post meta
-- Duration formatting utility for human-readable time display
+Recipe Schema block features sophisticated React-based editor interface with comprehensive Schema.org support:
+- **React Components**: Custom `DurationInput`, `ArrayInput`, and `TagInput` components for advanced UI interactions
+- **Comprehensive Form Interface**: Categorized sections for basic info, timing, categories, ingredients, instructions, nutrition, and additional metadata
+- **Real-time Validation**: ISO 8601 duration parsing/formatting and interactive array management
+- **Schema.org Compliance**: Complete attribute definition matching Schema.org Recipe specification
+- **Server-side Rendering**: PHP rendering with microdata and JSON-LD output
+- **Modern WordPress Integration**: Built with @wordpress/scripts, wp-scripts build system, and WordPress components
+- **Production Assets**: Compiled JavaScript and CSS optimized for WordPress deployment
 
 ### Build System ✅
-Production build system is fully implemented:
-- `build.sh` - Complete production ZIP creation with validation
-- `composer.json` - PHP dependency management with PSR-4 autoloading and linting scripts
-- `.buildignore` - Development file exclusion patterns for clean distribution
-- Automated file validation ensures all essential files are included in builds
+Dual-system production build is fully implemented:
+- **Frontend Build**: npm with @wordpress/scripts for React component compilation
+- **Backend Build**: Composer with PSR-4 autoloading and PHP dependency management
+- **Unified Build Script**: `build.sh` handles both npm and Composer builds with validation
+- **Asset Compilation**: Transforms `src/` React components into production `build/` assets
+- **Dependency Management**: Separate development and production dependencies for both systems
+- **File Validation**: Automated verification of compiled assets and essential plugin files
+- **Clean Distribution**: Excludes source files, development dependencies, and build tools from production ZIP
 
 
 ## Data Machine Integration Points

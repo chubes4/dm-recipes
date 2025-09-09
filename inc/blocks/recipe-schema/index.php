@@ -1,11 +1,10 @@
 <?php
 /**
  * Recipe Schema Block initialization.
- * Loads the recipe schema block functionality.
+ * This file is deprecated - block registration is now handled directly in the main plugin file.
+ * Kept for backward compatibility.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-
-require_once __DIR__ . '/recipe-schema.php';
