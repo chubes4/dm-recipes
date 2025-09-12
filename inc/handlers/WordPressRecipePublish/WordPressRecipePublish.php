@@ -116,11 +116,14 @@ class WordPressRecipePublish {
 
         return [
             'success' => true,
-            'message' => 'Recipe post created successfully',
-            'post_id' => $post_id,
-            'post_url' => get_permalink( $post_id ),
-            'edit_url' => get_edit_post_link( $post_id, 'raw' ),
-            'taxonomy_results' => $taxonomy_results
+            'data' => [
+                'post_id' => $post_id,
+                'post_title' => $parameters['post_title'],
+                'post_url' => get_permalink( $post_id ),
+                'edit_url' => get_edit_post_link( $post_id, 'raw' ),
+                'taxonomy_results' => $taxonomy_results
+            ],
+            'tool_name' => 'wordpress_recipe_publish'
         ];
     }
     

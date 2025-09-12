@@ -37,7 +37,7 @@ function dm_recipes_register_wordpress_recipe_publish_filters() {
             // Apply global defaults like Data Machine WordPress publisher
             $recipe_config = apply_filters('dm_apply_global_defaults', $recipe_config, 'wordpress_recipe_publish', 'publish');
             
-            $tools['recipe_publish'] = dm_recipes_get_dynamic_recipe_tool($recipe_config);
+            $tools['wordpress_recipe_publish'] = dm_recipes_get_dynamic_recipe_tool($recipe_config);
         }
         return $tools;
     }, 10, 3 );
@@ -53,6 +53,25 @@ function dm_recipes_register_wordpress_recipe_publish_filters() {
         $directives['wordpress_recipe_publish'] = 'When publishing recipes to WordPress, create comprehensive recipe content with proper Schema.org structured data. Focus on clear, detailed ingredients with specific measurements, step-by-step instructions, accurate timing information (prep/cook/total), and helpful cooking tips. Include recipe categories, cuisine types, and dietary information when relevant. Ensure all recipe data follows Schema.org Recipe markup standards for optimal SEO and rich snippets. Use descriptive language that helps readers understand the cooking process and expected results.';
         return $directives;
     } );
+
+    // Recipe-specific success message formatting
+    add_filter('dm_tool_success_message', function($default_message, $tool_name, $tool_result, $tool_parameters) {
+        if ($tool_name === 'wordpress_recipe_publish') {
+            $data = $tool_result['data'] ?? [];
+            $title = $data['post_title'] ?? $tool_parameters['post_title'] ?? '';
+            $url = $data['post_url'] ?? '';
+            $post_id = $data['post_id'] ?? '';
+            
+            if (!empty($title)) {
+                if (!empty($url)) {
+                    return "SUCCESS: Recipe published successfully. Recipe: '{$title}' is now live at {$url} (ID: {$post_id}). Your recipe has been created and is ready to cook!";
+                } else {
+                    return "SUCCESS: Recipe created successfully. Recipe: '{$title}' (ID: {$post_id}). Your recipe has been published to WordPress as requested.";
+                }
+            }
+        }
+        return $default_message;
+    }, 10, 4);
     
 }
 
@@ -69,7 +88,7 @@ function dm_recipes_get_dynamic_recipe_tool(array $recipe_config): array {
         'class' => WordPressRecipePublish::class,
         'method' => 'handle_tool_call',
         'handler' => 'wordpress_recipe_publish',
-        'description' => 'Publish recipe content to WordPress as a comprehensive recipe blog post.',
+        'description' => 'Create WordPress recipe posts with Schema.org structured data markup for SEO-optimized recipe content including ingredients, instructions, timing, and nutrition.',
         'parameters' => [
             'post_title' => [
                 'type' => 'string',
